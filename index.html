@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A1: Interactive Visualization</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container"> <!-- Centers content and sets max width -->
+
+        <header>
+            <h1>Project Title</h1>
+            <p class="subtitle">CMSC471 Assignment 1: Interactive Visualization · Kiran Manoj, Mihail Gjoni, Tong Zhan</p>
+        </header>
+
+        <!-- Short intro: the question the visualization answers and how to use it -->
+        <section id="intro">
+            <p>One or two sentences on the question this visualization explores.</p>
+            <p class="how-to"><strong>How to use:</strong> Drag on the bottom chart to filter the top chart. Scroll to zoom, drag to pan. Hover for details.</p>
+        </section>
+
+        <!-- Controls: dynamic filters / queries (Category I) -->
+        <div id="controls">
+            <label>Filter: <select id="filterSelect"></select></label>
+            <button id="resetButton">Reset</button>
+        </div>
+
+        <!-- Main view: zoom/pan, tooltips, highlighting (Category II) -->
+        <div id="mainChart" class="chart"></div>
+
+        <!-- Overview view: brushing here filters the main view (Category I) -->
+        <div id="overviewChart" class="chart"></div>
+
+        <!-- Write-up -->
+        <section id="writeup">
+            <h2>Dataset</h2>
+            <p>Background on the dataset and the variables / subset you chose.</p>
+
+            <h2>Design rationale</h2>
+            <h3>Implemented interactions</h3>
+            <ul>
+                <li><strong>Brushing and linking:</strong> ...</li>
+                <li><strong>Dynamic filters:</strong> ...</li>
+                <li><strong>Zooming and panning:</strong> ...</li>
+                <li><strong>Details-on-demand (tooltips):</strong> ...</li>
+                <li><strong>Highlighting:</strong> ...</li>
+            </ul>
+            <h3>Visual encodings</h3>
+            <p>Why these encodings? What alternatives did you consider?</p>
+
+            <h2>References</h2>
+            <ul>
+                <li>Data source: ...</li>
+                <li>Examples this work builds on: ...</li>
+            </ul>
+
+            <h2>Development process</h2>
+            <p>How the work was split among team members.</p>
+            <p>Roughly how many people-hours did it take? What took the most time?</p>
+
+            <h2>AI usage</h2>
+            <p>Summary of any AI tools used and how.</p>
+        </section>
+    </div>
+
+    <div id="tooltip" style="display:none"></div>
+
+    <!-- Load D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
