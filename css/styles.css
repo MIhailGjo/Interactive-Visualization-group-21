@@ -89,6 +89,19 @@ select {
     margin-top: 25px;
 }
 
+/* Station Spotlight */
+.spotlight {
+    margin-top: 35px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+#spotlight-vis svg {
+    width: 100%;
+    height: auto;
+}
+
+/* Day Slider */
 #day-slider {
     max-width: 660px;
     margin: 0 auto;
@@ -99,6 +112,17 @@ select {
     height: auto;
 }
 
+.spotlight-bar {
+    cursor: pointer;
+}
+
+.spotlight-bar:hover {
+    opacity: 0.7;
+}
+
+#spotlight-description {
+    color: #667085;
+    font-size: 14px;
 #day-label {
     min-width: 200px;
     font-weight: bold;
