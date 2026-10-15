@@ -13,7 +13,7 @@
 <body>
     <div class="container">
 
-        <h1>🏆 Weather Olympics 2017</h1>
+        <h1>Weather Olympics 2017</h1>
 
         <p>
             Which U.S. weather stations experienced
@@ -24,13 +24,13 @@
         <div class="controls">
             <label for="category">Weather category:</label>
             <select id="category">
-                <option value="TMAX">🔥 Hottest</option>
-                <option value="PRCP">🌧️ Rainiest</option>
-                <option value="WSF5">💨 Windiest</option>
+                <option value="TMAX">Hottest</option>
+                <option value="PRCP">Rainiest</option>
+                <option value="WSF5">Windiest</option>
             </select>
 
             <label for="month">Month:</label>
-            <select id="month">
+            <select id="month" autocomplete="off">
                 <option value="all">All available months</option>
                 <option value="01">January</option>
                 <option value="02">February</option>
@@ -42,7 +42,24 @@
                 <option value="08">August</option>
                 <option value="09">September</option>
             </select>
+
+            <label for="state">State:</label>
+            <select id="state" autocomplete="off">
+                <option value="all">All states</option>
+            </select>
         </div>
+
+        <div class="controls">
+            <span id="day-label">Pick a month to use the day slider</span>
+
+            <label class="switch">
+                <input type="checkbox" id="day-toggle" disabled>
+                <span class="track"></span>
+                <span id="toggle-text">Highest extreme</span>
+            </label>
+        </div>
+
+        <div id="day-slider"></div>
 
         <h2 id="chart-title">Hottest Weather Stations</h2>
 
@@ -67,9 +84,134 @@
 
         <div id="tooltip" style="display:none"></div>
 
+        <section class="writeup">
+
+            <h2>Write-up</h2>
+
+            <h3>Dataset and question</h3>
+            <p>
+                We use the Daily Weather in the U.S., 2017 dataset, which
+                contains daily measurements from NOAA's Global Historical
+                Climatology Network (GHCN-Daily) for U.S. weather stations,
+                with sparse stations filtered out. Our question is: which
+                stations recorded the most extreme weather in 2017? We focus
+                on three variables: daily maximum temperature (TMAX, °F),
+                daily precipitation (PRCP, inches) and fastest 5-second wind
+                gust (WSF5, mph). For each station we keep its single highest
+                reading in the selected period and show the top 10.
+            </p>
+
+            <h3>Implemented interactions</h3>
+            <ul>
+                <li><strong>Dynamic queries (Category I):</strong> the weather
+                    category and month dropdowns re-query the data and
+                    re-rank the stations immediately.</li>
+                <li><strong>Day range slider (Category I):</strong> after
+                    picking a month, a two-handle slider sets the lower and
+                    upper day, and the ranking uses only the days in
+                    between. Bars animate (d3.easeLinear) to their new
+                    length and rank, so you can watch the leaders change
+                    over the month.</li>
+                <li><strong>State filter (Category I):</strong> a state
+                    dropdown limits the ranking to stations in one state,
+                    so you can find each state's local champions. It
+                    combines with the category, month and day
+                    filters.</li>
+                <li><strong>Extreme / single-day toggle:</strong> switches
+                    the ranking between the highest extreme in the day
+                    range, and the readings from only one day (the slider
+                    then has a single handle).</li>
+                <li><strong>Details-on-demand (Category II):</strong> hovering
+                    a bar shows a tooltip with the station name, state,
+                    exact value and the date of the reading.</li>
+                <li><strong>Highlighting (Category II):</strong> the hovered
+                    bar is outlined and faded so it stands out from the
+                    others.</li>
+            </ul>
+
+            <h3>Design rationale</h3>
+            <p>
+                A "top 10" ranking is a comparison of one quantity across
+                categories, so we used a horizontal bar chart: bar length on
+                a common zero baseline is the most accurately read encoding
+                for magnitude, and horizontal bars leave room for long
+                station names. Bars are sorted from highest to lowest so the
+                winner is always on top, and each bar carries its value as a
+                direct label so exact numbers can be read without the axis.
+                Each category has its own hue (red for heat, blue for rain,
+                teal for wind) so the active category is recognizable at a
+                glance; color is not used to encode data values.
+            </p>
+            <p>
+                We chose dropdown filters because the questions users ask
+                are discrete ("which station was hottest in July?"), and a
+                dropdown keeps the choice and its current value visible.
+                Tooltips keep the chart uncluttered while still giving the
+                date and state on demand. We considered a map of stations,
+                but a map mostly encodes location, while our question is
+                about ranking magnitudes, so a map would make the
+                comparison harder. We also considered ranking by state, but
+                state-level aggregates hide the single extreme readings we
+                wanted to show.
+            </p>
+            <p>
+                Data cleaning: missing readings are skipped and simple
+                plausibility limits are applied (TMAX between −80 and 140 °F,
+                PRCP between 0 and 40 in, WSF5 between 0 and 150 mph). These
+                are our own limits, not official NOAA quality flags. The
+                dataset covers January 1 to September 21, 2017.
+            </p>
+
+            <h3>References</h3>
+            <ul>
+                <li>NOAA National Centers for Environmental Information,
+                    <a href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily">Global
+                    Historical Climatology Network - Daily (GHCN-Daily)</a>.
+                    Filtered 2017 subset provided by the CMSC471 course
+                    staff (weather.csv, with weather.txt column
+                    descriptions).</li>
+                <li><a href="https://d3js.org/">D3.js v7</a> for the
+                    visualization.</li>
+            </ul>
+
+            <h3>Development process</h3>
+            <p>
+                The work was split between the three of us:
+            </p>
+            <ul>
+                <li><strong>Kiran Manoj:</strong> initial data mapping, the
+                    bar chart, and the category and month dropdowns.</li>
+                <li><strong>Mihail Gjoni:</strong> the day range slider, the
+                    animated transitions, the highest-extreme / single-day
+                    toggle and the state filter.</li>
+                <li><strong>Tong Zhan:</strong> formatting, fixing bugs, the
+                    written descriptions and the demo video.</li>
+            </ul>
+            <p>
+                Each of us spent about 4 hours, so the project took roughly
+                12 people-hours in total.
+                One of the most difficult parts was making the day slider
+                informative for the chart: deciding what a range of days
+                should mean for the ranking, and making the changes easy
+                to follow as the slider moves.
+            </p>
+
+            <h3>AI usage</h3>
+            <p>
+                 to check the project
+                 requirements, draft parts of the 
+                write up, the single-day toggle and the state filter.
+        
+                The team also used ChatGPT  
+            </p>
+
+        </section>
+
     </div>
 
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/d3-simple-slider@2.1.0/dist/d3-simple-slider.min.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/slider.js"></script>
 </body>
 </html>
