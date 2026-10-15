@@ -1,60 +1,90 @@
+
 body {
     font-family: Arial, sans-serif;
-    color: #222;
-    line-height: 1.6;
+    background-color: #f4f7fb;
+    color: #243447;
     margin: 0;
 }
 
-/* Container styling for layout */
 .container {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 0 16px;
+    max-width: 1150px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: white;
+    border-radius: 12px;
 }
 
-.subtitle {
-    color: #666;
-    margin-top: -0.5rem;
+h1 {
+    text-align: center;
+    color: #183153;
 }
 
-#controls {
-    margin: 1rem 0;
+h2 {
+    text-align: center;
+    margin-top: 30px;
+}
+
+p {
+    text-align: center;
+    line-height: 1.6;
+}
+
+.controls {
     display: flex;
-    gap: 1rem;
+    justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 25px 0;
 }
 
-.chart svg {
-    border: 1px solid #ccc; /* otherwise you can't see an empty chart */
-    margin-bottom: 1rem;
+select {
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    background: white;
 }
 
-/* Axes */
-.axis path,
-.axis line {
-    stroke: #333;
-    shape-rendering: crispEdges;
+#vis svg {
+    width: 100%;
+    height: auto;
 }
 
-.axis text {
-    font-size: 11px;
+.bar {
+    cursor: pointer;
 }
 
-.labels {
+.bar:hover {
+    stroke: #222;
+    stroke-width: 2px;
+}
+
+#tooltip {
+    position: absolute;
+    background: #243447;
+    color: white;
+    padding: 12px;
+    border-radius: 6px;
+    pointer-events: none;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.note {
+    color: #667085;
     font-size: 13px;
 }
 
-/* Tooltip */
-#tooltip {
-    position: absolute; /* So we can move it with the cursor */
-    padding: 10px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    pointer-events: none; /* Prevent tooltip from interfering with mouse events */
-    font-size: 12px;
+.chart-explanation {
+    color: #667085;
+    font-size: 14px;
+    margin-bottom: 20px;
 }
 
-#writeup {
-    margin-top: 2rem;
+.note {
+    color: #667085;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 25px;
 }
