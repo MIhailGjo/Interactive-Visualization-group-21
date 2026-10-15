@@ -1,72 +1,74 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A1: Interactive Visualization</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Weather Olympics 2017</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
-    <div class="container"> <!-- Centers content and sets max width -->
+    <div class="container">
 
-        <header>
-            <h1>Project Title</h1>
-            <p class="subtitle">CMSC471 Assignment 1: Interactive Visualization · Kiran Manoj, Mihail Gjoni, Tong Zhan</p>
-        </header>
+        <h1>🏆 Weather Olympics 2017</h1>
 
-        <!-- Short intro: the question the visualization answers and how to use it -->
-        <section id="intro">
-            <p>One or two sentences on the question this visualization explores.</p>
-            <p class="how-to"><strong>How to use:</strong> Drag on the bottom chart to filter the top chart. Scroll to zoom, drag to pan. Hover for details.</p>
-        </section>
+        <p>
+            Which U.S. weather stations experienced
+            the most extreme weather?
+            Choose a category and explore the winners!
+        </p>
 
-        <!-- Controls: dynamic filters / queries (Category I) -->
-        <div id="controls">
-            <label>Filter: <select id="filterSelect"></select></label>
-            <button id="resetButton">Reset</button>
+        <div class="controls">
+            <label for="category">Weather category:</label>
+            <select id="category">
+                <option value="TMAX">🔥 Hottest</option>
+                <option value="PRCP">🌧️ Rainiest</option>
+                <option value="WSF5">💨 Windiest</option>
+            </select>
+
+            <label for="month">Month:</label>
+            <select id="month">
+                <option value="all">All available months</option>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+            </select>
         </div>
 
-        <!-- Main view: zoom/pan, tooltips, highlighting (Category II) -->
-        <div id="mainChart" class="chart"></div>
+        <h2 id="chart-title">Hottest Weather Stations</h2>
 
-        <!-- Overview view: brushing here filters the main view (Category I) -->
-        <div id="overviewChart" class="chart"></div>
+        <p class="chart-explanation">
+            Each bar shows the highest reported daily measurement
+            at one station during the selected period.
+            Rankings are based on individual stations, not states.
+        </p>
 
-        <!-- Write-up -->
-        <section id="writeup">
-            <h2>Dataset</h2>
-            <p>Background on the dataset and the variables / subset you chose.</p>
+        <div id="vis"></div>
 
-            <h2>Design rationale</h2>
-            <h3>Implemented interactions</h3>
-            <ul>
-                <li><strong>Brushing and linking:</strong> ...</li>
-                <li><strong>Dynamic filters:</strong> ...</li>
-                <li><strong>Zooming and panning:</strong> ...</li>
-                <li><strong>Details-on-demand (tooltips):</strong> ...</li>
-                <li><strong>Highlighting:</strong> ...</li>
-            </ul>
-            <h3>Visual encodings</h3>
-            <p>Why these encodings? What alternatives did you consider?</p>
+        <p id="status">Loading weather data...</p>
 
-            <h2>References</h2>
-            <ul>
-                <li>Data source: ...</li>
-                <li>Examples this work builds on: ...</li>
-            </ul>
+        <p class="note">
+            Data note: Rankings are based on reported station observations
+            from January 1 through September 21, 2017.
+            Missing readings are skipped, and simple plausibility limits
+            are applied. These limits are not official NOAA
+            quality-control flags, so unusual observations should
+            be interpreted cautiously.
+        </p>
 
-            <h2>Development process</h2>
-            <p>How the work was split among team members.</p>
-            <p>Roughly how many people-hours did it take? What took the most time?</p>
+        <div id="tooltip" style="display:none"></div>
 
-            <h2>AI usage</h2>
-            <p>Summary of any AI tools used and how.</p>
-        </section>
     </div>
 
-    <div id="tooltip" style="display:none"></div>
-
-    <!-- Load D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="js/script.js"></script>
 </body>
