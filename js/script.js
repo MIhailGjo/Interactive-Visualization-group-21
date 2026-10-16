@@ -1,11 +1,3 @@
-
-// Weather Olympics 2017
-// CMSC471 - Interactive Visualization
-
-// ------------------------------------
-// 1. Chart size and margins
-// ------------------------------------
-
 const margin = {
     top: 30,
     right: 90,
@@ -16,20 +8,12 @@ const margin = {
 const width = 900 - margin.left - margin.right;
 const height = 550 - margin.top - margin.bottom;
 
-// ------------------------------------
-// 2. Global variables
-// ------------------------------------
-
 let allData = [];
 let category = "TMAX";
 let selectedMonth = "all";
 let selectedStation = null;
 
 let xScale, yScale;
-
-// ------------------------------------
-// 3. Create leaderboard SVG
-// ------------------------------------
 
 const svg = d3.select("#vis")
     .append("svg")
@@ -39,10 +23,6 @@ const svg = d3.select("#vis")
         "transform",
         `translate(${margin.left},${margin.top})`
     );
-
-// ------------------------------------
-// 4. Create Station Spotlight SVG
-// ------------------------------------
 
 const spotlightMargin = {
     top: 20,
@@ -68,10 +48,6 @@ const spotlightSvg = d3.select("#spotlight-vis")
         `translate(${spotlightMargin.left},${spotlightMargin.top})`
     );
 
-// ------------------------------------
-// 5. Weather categories
-// ------------------------------------
-
 const settings = {
     TMAX: {
         title: "Hottest Weather Stations",
@@ -95,10 +71,8 @@ const settings = {
     }
 };
 
-// ------------------------------------
-// 6. Convert CSV strings to numbers
-// ------------------------------------
-
+// Empty cells should stay missing, not turn into zero.
+// Otherwise a station could appear to have a real reading of 0.
 function convertNumber(value) {
 
     if (value === "" || value == null) {
@@ -114,14 +88,14 @@ function convertNumber(value) {
     return number;
 }
 
-// ------------------------------------
-// 7. Load weather dataset
-// ------------------------------------
-
 function init() {
 
     d3.csv("./data/weather.csv", d => ({
+
+        // Using the station name and coordinates together helps
+        // distinguish stations that might share the same name.
         id: d.station + "|" + d.latitude + "|" + d.longitude,
+
         station: d.station,
         state: d.state,
         date: d.date,
@@ -149,10 +123,6 @@ function init() {
     });
 }
 
-// ------------------------------------
-// 8. Connect dropdowns
-// ------------------------------------
-
 function setupSelectors() {
 
     d3.select("#category")
@@ -160,7 +130,8 @@ function setupSelectors() {
 
             category = this.value;
 
-            // Clear selection when category changes.
+            // The station selected under the previous category
+            // might not be in the new top 10.
             selectedStation = null;
 
             updateVis();
@@ -170,23 +141,15 @@ function setupSelectors() {
         .on("change", function() {
 
             selectedMonth = this.value;
-
-            // Clear selection when month changes.
             selectedStation = null;
 
             updateVis();
         });
 }
 
-// ------------------------------------
-// 9. Check measurement validity
-// ------------------------------------
-
-// Exploratory plausibility limits.
-// These are NOT official NOAA quality flags.
-// They do not guarantee that every remaining
-// reading is accurate.
-
+// These are basic limits we chose to catch implausible values.
+// They are not official NOAA checks, and passing them does
+// not guarantee that a reading is correct.
 function validReading(value) {
 
     if (value == null) {
@@ -208,18 +171,48 @@ function validReading(value) {
     return false;
 }
 
-// ------------------------------------
-// 10. Find the top 10 stations
-// ------------------------------------
+// We found a few readings worth checking more closely.
+// They stay in the rankings because we haven't confirmed
+// that they are errors. This isn't a complete NOAA quality check.
+function readingWarning(d) {
 
+    const stationName = d.station.trim().toUpperCase();
+
+    if (
+        category === "TMAX" &&
+        stationName === "PATUXENT RIVER NAS" &&
+        d.date === "20170716"
+    ) {
+        return "Unusually high reported temperature for Maryland; not independently verified.";
+    }
+
+    if (
+        category === "WSF5" &&
+        stationName === "MOBRIDGE MUNI AP" &&
+        d.date === "20170211"
+    ) {
+        return "Exceptionally high reported wind gust; not independently verified.";
+    }
+
+    if (
+        category === "WSF5" &&
+        stationName === "KLAMATH FALLS INTL AP" &&
+        d.date === "20170622"
+    ) {
+        return "Exceptionally high reported wind gust; not independently verified.";
+    }
+
+    return "";
+}
+
+// This is the original month-based ranking.
+// slider.js adds the state and day filters in its own version.
 function getTopStations() {
 
     const bestStations = {};
 
-    // Visit every observation in the dataset.
     for (const d of allData) {
 
-        // Keep only dates from the chosen month.
         if (
             selectedMonth !== "all" &&
             d.date.slice(4, 6) !== selectedMonth
@@ -229,12 +222,11 @@ function getTopStations() {
 
         const value = d[category];
 
-        // Skip missing or implausible readings.
         if (!validReading(value)) {
             continue;
         }
 
-        // Keep the highest observation for each station.
+        // Only keep the highest valid measurement for each station.
         if (
             !bestStations[d.id] ||
             value > bestStations[d.id].value
@@ -251,17 +243,13 @@ function getTopStations() {
 
     const ranked = Object.values(bestStations);
 
-    // Sort from largest to smallest.
     ranked.sort((a, b) => b.value - a.value);
 
-    // Return the top 10 stations.
     return ranked.slice(0, 10);
 }
 
-// ------------------------------------
-// 11. Update leaderboard
-// ------------------------------------
-
+// slider.js replaces this with animatedUpdateVis() when it loads.
+// Keeping the original update here avoids changing the existing setup.
 function updateVis() {
 
     const currentData = getTopStations();
@@ -276,10 +264,8 @@ function updateVis() {
             `for the selected category and dates.`
         );
 
-    // Remove old axes before drawing new ones.
     svg.selectAll(".axis").remove();
 
-    // Horizontal scale for measurement values.
     xScale = d3.scaleLinear()
         .domain([
             0,
@@ -287,19 +273,16 @@ function updateVis() {
         ])
         .range([0, width]);
 
-    // Vertical scale for station rankings.
     yScale = d3.scaleBand()
         .domain(currentData.map(d => d.id))
         .range([0, height])
         .padding(0.25);
 
-    // X-axis.
     svg.append("g")
         .attr("class", "axis")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(xScale).ticks(6));
 
-    // Y-axis with station names.
     svg.append("g")
         .attr("class", "axis")
         .call(
@@ -316,7 +299,6 @@ function updateVis() {
                 })
         );
 
-    // Draw and update leaderboard bars.
     svg.selectAll(".bar")
         .data(currentData, d => d.id)
         .join("rect")
@@ -326,46 +308,51 @@ function updateVis() {
         .attr("width", d => xScale(d.value))
         .attr("height", yScale.bandwidth())
 
-        // Selected station appears gold.
         .style("fill", d =>
             d.id === selectedStation
                 ? "#f4b942"
                 : currentSettings.color
         )
 
-        // Click a bar to select a station.
+        .attr("stroke", d =>
+            readingWarning(d) ? "#b45309" : "none"
+        )
+        .attr("stroke-width", d =>
+            readingWarning(d) ? 2 : 0
+        )
+        .attr("stroke-dasharray", d =>
+            readingWarning(d) ? "5,3" : "none"
+        )
+
         .on("click", function(event, d) {
 
             selectedStation = d.id;
-
-            // Update both the leaderboard and spotlight.
             updateVis();
         })
 
-        // Leaderboard tooltip.
         .on("mouseover", function(event, d) {
 
             d3.select(this)
                 .style("opacity", 0.7);
 
+            const warning = readingWarning(d);
+
             d3.select("#tooltip")
                 .style("display", "block")
                 .html(
                     `<strong>${d.station}</strong><br>
-                        State: ${d.state}<br>
-                        Value: ${d.value.toFixed(2)}
-                        ${currentSettings.unit}<br>
-                        Date: ${d.date.slice(0, 4)}-${d.date.slice(4, 6)}-${d.date.slice(6, 8)}<br>
-                        Click to explore this station`
+                     State: ${d.state}<br>
+                     Value: ${d.value.toFixed(2)}
+                     ${currentSettings.unit}<br>
+                     Date: ${d.date.slice(0,4)}-${d.date.slice(4,6)}-${d.date.slice(6,8)}<br>
+                     ${warning
+                         ? "<strong>Data-quality caution:</strong> " +
+                           warning + "<br>"
+                         : ""}
+                     Click to explore this station`
                 )
-                .style(
-                    "left",
-                    (event.pageX + 15) + "px"
-                )
-                .style(
-                    "top",
-                    (event.pageY - 20) + "px"
-                );
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 20) + "px");
         })
 
         .on("mouseout", function() {
@@ -377,20 +364,17 @@ function updateVis() {
                 .style("display", "none");
         });
 
-    // Numerical labels at the end of bars.
     svg.selectAll(".value-label")
         .data(currentData, d => d.id)
         .join("text")
         .attr("class", "value-label")
         .attr("x", d => xScale(d.value) + 5)
         .attr("y", d =>
-            yScale(d.id) +
-            yScale.bandwidth() / 2 + 4
+            yScale(d.id) + yScale.bandwidth() / 2 + 4
         )
         .attr("font-size", 12)
         .text(d => d.value.toFixed(1));
 
-    // Horizontal axis label.
     svg.selectAll(".x-label")
         .data([currentSettings.unit])
         .join("text")
@@ -402,17 +386,11 @@ function updateVis() {
             `Highest reported measurement (${currentSettings.unit})`
         );
 
-    // Keep the second chart linked to the leaderboard.
     updateSpotlight();
 }
 
-// ------------------------------------
-// 12. Update Station Spotlight
-// ------------------------------------
-
 function updateSpotlight() {
 
-    // If nothing has been selected, show instructions.
     if (selectedStation === null) {
 
         d3.select("#spotlight-vis")
@@ -437,7 +415,26 @@ function updateSpotlight() {
 
     const currentSettings = settings[category];
 
-    // Find matching daily records for this station.
+    function isSelectedDate(d) {
+
+        if (
+            selectedMonth === "all" ||
+            selectedDay === null
+        ) {
+            return true;
+        }
+
+        const day = +d.date.slice(6, 8);
+
+        if (singleDay) {
+            return day === selectedDay;
+        }
+
+        return day >= startDay && day <= selectedDay;
+    }
+
+    // Show all valid readings from the selected month, not just
+    // the slider range. The extra days give the selected period context.
     const stationData = allData.filter(d => {
 
         const correctStation =
@@ -448,16 +445,14 @@ function updateSpotlight() {
             d.date.slice(4, 6) === selectedMonth;
 
         return correctStation &&
-                correctMonth &&
-                validReading(d[category]);
+               correctMonth &&
+               validReading(d[category]);
     });
 
-    // Sort records in chronological order.
     stationData.sort((a, b) =>
         a.date.localeCompare(b.date)
     );
 
-    // Handle missing observations.
     if (stationData.length === 0) {
 
         spotlightSvg.selectAll("*").remove();
@@ -477,22 +472,98 @@ function updateSpotlight() {
     d3.select("#spotlight-title")
         .text(`Station Spotlight: ${stationName}`);
 
-    d3.select("#spotlight-description")
-        .text(
-            `${stateName} — ${currentSettings.description} ` +
-            `(${currentSettings.unit})`
-        );
+    let selectedPeriod = "all available dates";
 
-    // Clear the previous spotlight visualization.
+    if (
+        selectedMonth !== "all" &&
+        selectedDay !== null
+    ) {
+        if (singleDay) {
+            selectedPeriod =
+                `${monthName(selectedMonth)} ${selectedDay}`;
+        } else {
+            selectedPeriod =
+                `${monthName(selectedMonth)} ${startDay}–${selectedDay}`;
+        }
+    }
+
+    let description =
+        `${stateName} — ${currentSettings.description} ` +
+        `(${currentSettings.unit}). `;
+
+    if (
+        selectedMonth !== "all" &&
+        selectedDay !== null
+    ) {
+        description +=
+            `Gold bars show ${selectedPeriod}; ` +
+            `faded bars provide context. `;
+    } else {
+        description +=
+            "All available dates are highlighted. ";
+    }
+
+    description +=
+        "Gaps indicate days without valid reported measurements.";
+
+    d3.select("#spotlight-description")
+        .text(description);
+
     spotlightSvg.selectAll("*").remove();
 
-    // X-axis: dates.
+    // Build a position for every date, including dates with no reading.
+    // Otherwise missing days would disappear and the timeline could
+    // make readings from separate dates look consecutive.
+    let allDates = [];
+
+    if (selectedMonth !== "all") {
+
+        const numberOfDays =
+            lastDayInData(selectedMonth);
+
+        for (let day = 1; day <= numberOfDays; day++) {
+
+            const monthText =
+                String(selectedMonth).padStart(2, "0");
+
+            const dayText =
+                String(day).padStart(2, "0");
+
+            allDates.push(
+                "2017" + monthText + dayText
+            );
+        }
+
+    } else {
+
+        // The provided dataset ends on September 21, not December 31.
+        const start = new Date(2017, 0, 1);
+        const end = new Date(2017, 8, 21);
+
+        for (
+            let date = new Date(start);
+            date <= end;
+            date.setDate(date.getDate() + 1)
+        ) {
+            const year = date.getFullYear();
+
+            const month = String(
+                date.getMonth() + 1
+            ).padStart(2, "0");
+
+            const day = String(
+                date.getDate()
+            ).padStart(2, "0");
+
+            allDates.push(year + month + day);
+        }
+    }
+
     const x = d3.scaleBand()
-        .domain(stationData.map(d => d.date))
+        .domain(allDates)
         .range([0, spotlightWidth])
         .padding(0.15);
 
-    // Y-axis: reported measurement.
     const lowestValue = d3.min(
         stationData,
         d => d[category]
@@ -511,18 +582,17 @@ function updateSpotlight() {
         .nice()
         .range([spotlightHeight, 0]);
 
-    // Limit displayed date labels to prevent overlap.
-    const labelInterval = Math.ceil(
-        stationData.length / 8
+    // Show only some date labels so they don't overlap,
+    // while still keeping every date in the actual scale.
+    const labelInterval = Math.max(
+        1,
+        Math.ceil(allDates.length / 8)
     );
 
-    const visibleDates = stationData
-        .filter((d, i) =>
-            i % labelInterval === 0
-        )
-        .map(d => d.date);
+    const visibleDates = allDates.filter(
+        (date, i) => i % labelInterval === 0
+    );
 
-    // Bottom axis.
     spotlightSvg.append("g")
         .attr("class", "axis")
         .attr(
@@ -538,12 +608,10 @@ function updateSpotlight() {
                 )
         );
 
-    // Left axis.
     spotlightSvg.append("g")
         .attr("class", "axis")
         .call(d3.axisLeft(y).ticks(6));
 
-    // One bar for each daily observation.
     spotlightSvg.selectAll(".spotlight-bar")
         .data(stationData, d => d.date)
         .join("rect")
@@ -561,48 +629,72 @@ function updateSpotlight() {
             Math.abs(y(0) - y(d[category]))
         )
 
-        .style("fill", currentSettings.color)
+        // Highlight the dates in the slider range, but leave
+        // the other observations visible for comparison.
+        .attr("fill", d =>
+            isSelectedDate(d)
+                ? "#f4b942"
+                : currentSettings.color
+        )
 
-        // Tooltip for individual daily observations.
+        .attr("opacity", d =>
+            isSelectedDate(d) ? 1 : 0.25
+        )
+
+        // Use the same warning outlines as the main leaderboard.
+        .attr("stroke", d =>
+            readingWarning(d) ? "#b45309" : "none"
+        )
+
+        .attr("stroke-width", d =>
+            readingWarning(d) ? 2 : 0
+        )
+
+        .attr("stroke-dasharray", d =>
+            readingWarning(d) ? "5,3" : "none"
+        )
+
         .on("mouseover", function(event, d) {
 
             d3.select(this)
-                .style("opacity", 0.7);
+                .attr("opacity", 1);
 
             const date =
                 d.date.slice(0, 4) + "-" +
                 d.date.slice(4, 6) + "-" +
                 d.date.slice(6, 8);
 
+            const warning = readingWarning(d);
+
             d3.select("#tooltip")
                 .style("display", "block")
                 .html(
                     `<strong>${date}</strong><br>
-                        ${stationName}<br>
-                        ${currentSettings.description}:<br>
-                        ${d[category].toFixed(2)}
-                        ${currentSettings.unit}`
+                     ${stationName}<br>
+                     ${currentSettings.description}:<br>
+                     ${d[category].toFixed(2)}
+                     ${currentSettings.unit}
+                     ${warning
+                         ? "<br><strong>Data-quality caution:</strong> " +
+                           warning
+                         : ""}`
                 )
-                .style(
-                    "left",
-                    (event.pageX + 15) + "px"
-                )
-                .style(
-                    "top",
-                    (event.pageY - 20) + "px"
-                );
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 20) + "px");
         })
 
-        .on("mouseout", function() {
+        .on("mouseout", function(event, d) {
 
             d3.select(this)
-                .style("opacity", 1);
+                .attr(
+                    "opacity",
+                    isSelectedDate(d) ? 1 : 0.25
+                );
 
             d3.select("#tooltip")
                 .style("display", "none");
         });
 
-    // Label the spotlight's horizontal axis.
     spotlightSvg.append("text")
         .attr("class", "x-label")
         .attr("x", spotlightWidth / 2)
@@ -610,9 +702,5 @@ function updateSpotlight() {
         .attr("text-anchor", "middle")
         .text("Date (month/day)");
 }
-
-// ------------------------------------
-// 13. Start application
-// ------------------------------------
 
 window.addEventListener("load", init);

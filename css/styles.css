@@ -29,6 +29,7 @@ p {
     line-height: 1.6;
 }
 
+/* Let the filters wrap onto another row if the screen is too narrow. */
 .controls {
     display: flex;
     justify-content: center;
@@ -46,7 +47,9 @@ select {
     background: white;
 }
 
-#vis svg {
+/* Keep both charts within the width of the page. */
+#vis svg,
+#spotlight-vis svg {
     width: 100%;
     height: auto;
 }
@@ -55,11 +58,13 @@ select {
     cursor: pointer;
 }
 
-.bar:hover {
+/* The hover effect should not replace a data-quality warning outline. */
+.bar:hover:not([stroke-dasharray]) {
     stroke: #222;
     stroke-width: 2px;
 }
 
+/* Tooltips follow the mouse, so they should not block bar interactions. */
 #tooltip {
     position: absolute;
     background: #243447;
@@ -69,17 +74,7 @@ select {
     pointer-events: none;
     font-size: 13px;
     line-height: 1.6;
-}
-
-.note {
-    color: #667085;
-    font-size: 13px;
-}
-
-.chart-explanation {
-    color: #667085;
-    font-size: 14px;
-    margin-bottom: 20px;
+    max-width: 300px;
 }
 
 .note {
@@ -89,19 +84,20 @@ select {
     margin-top: 25px;
 }
 
-/* Station Spotlight */
+.chart-explanation {
+    color: #667085;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* Separate Station Spotlight from the main leaderboard. */
 .spotlight {
     margin-top: 35px;
     padding-top: 20px;
     border-top: 1px solid #ddd;
 }
 
-#spotlight-vis svg {
-    width: 100%;
-    height: auto;
-}
-
-/* Day Slider */
+/* The slider should shrink with the page instead of overflowing. */
 #day-slider {
     max-width: 660px;
     margin: 0 auto;
@@ -123,11 +119,14 @@ select {
 #spotlight-description {
     color: #667085;
     font-size: 14px;
+}
+
 #day-label {
     min-width: 200px;
     font-weight: bold;
 }
 
+/* Style the checkbox as a sliding switch without changing how it works. */
 .switch {
     display: inline-flex;
     align-items: center;
@@ -173,6 +172,7 @@ select {
     cursor: not-allowed;
 }
 
+/* Keep the write-up narrower than the charts so longer paragraphs are readable. */
 .writeup {
     max-width: 800px;
     margin: 40px auto 0;
