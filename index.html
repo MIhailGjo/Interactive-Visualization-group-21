@@ -49,7 +49,9 @@
         </div>
 
         <div class="controls">
-            <span id="day-label">Pick a month to use the day slider</span>
+            <span id="day-label">
+                Pick a month to use the day slider
+            </span>
 
             <label class="switch">
                 <input type="checkbox" id="day-toggle" disabled>
@@ -58,6 +60,7 @@
             </label>
         </div>
 
+        <!-- The slider is created here by slider.js after a month is selected. -->
         <div id="day-slider"></div>
 
         <h2 id="chart-title">Hottest Weather Stations</h2>
@@ -68,6 +71,7 @@
             Rankings are based on individual stations, not states.
         </p>
 
+        <!-- D3 adds the Top 10 leaderboard inside this container. -->
         <div id="vis"></div>
 
         <section class="spotlight">
@@ -78,151 +82,223 @@
                 that station's daily weather.
             </p>
 
+            <!-- This chart appears when someone selects a leaderboard bar. -->
             <div id="spotlight-vis"></div>
         </section>
 
         <p id="status">Loading weather data...</p>
 
         <p class="note">
-            Data note: Rankings are based on reported station observations
-            from January 1 through September 21, 2017.
-            Missing readings are skipped, and simple plausibility limits
-            are applied. These limits are not official NOAA
-            quality-control flags, so unusual observations should
-            be interpreted cautiously.
+            Data note: Rankings use reported daily station observations
+            from January 1 through September 21, 2017. Missing and invalid
+            readings are skipped, and basic plausibility limits are applied.
+            These limits are not official NOAA quality-control flags.
+            Measurements requiring further review are marked with a dashed
+            amber outline and explained in their tooltips. Flagged
+            observations remain in the rankings until independently verified.
         </p>
 
+        <!-- Both charts use the same tooltip rather than creating separate ones. -->
         <div id="tooltip" style="display:none"></div>
 
         <section class="writeup">
 
             <h2>Write-up</h2>
 
-            <h3>Dataset and question</h3>
+            <h3>Dataset and Research Question</h3>
             <p>
-                We use the Daily Weather in the U.S., 2017 dataset, which
-                contains daily measurements from NOAA's Global Historical
-                Climatology Network (GHCN-Daily) for U.S. weather stations,
-                with sparse stations filtered out. Our question is: which
-                stations recorded the most extreme weather in 2017? We focus
-                on three variables: daily maximum temperature (TMAX, °F),
-                daily precipitation (PRCP, inches) and fastest 5-second wind
-                gust (WSF5, mph). For each station we keep its single highest
-                reading in the selected period and show the top 10.
+                We used the <em>Daily Weather in the U.S., 2017</em>
+                dataset from class, which is based on NOAA's GHCN-Daily
+                records from weather stations across the United States.
+                We wanted to find out which stations recorded the most
+                extreme weather, so we focused on three measurements:
+                maximum temperature (TMAX), precipitation (PRCP), and
+                the fastest five-second wind gust (WSF5). For each
+                category, we took every station's highest valid reported
+                reading within the selected period and ranked the top
+                10 stations.
             </p>
 
-            <h3>Implemented interactions</h3>
+            <h3>Interactive Features</h3>
+            <p>
+                Our main visualization is a horizontal bar chart that
+                works as a leaderboard. Users can switch between
+                Hottest, Rainiest, and Windiest while filtering the
+                rankings by month or state. We also included a day
+                slider that lets users select a range of days or
+                switch to single-day mode to look at one specific
+                date. The bars animate as the rankings change,
+                making it easier to see which stations move up
+                or down.
+            </p>
+
+            <p>
+                Clicking a bar opens Station Spotlight, where the
+                selected station turns gold in the leaderboard and
+                a second chart shows its daily measurements. The
+                chart keeps the surrounding dates visible, with
+                selected days highlighted in gold and the others
+                faded for comparison. Hovering over bars in either
+                chart shows the exact value and date. We also added
+                warnings to certain unusually high readings that
+                haven't been independently verified.
+            </p>
+
+            <h3>Design Decisions and Alternatives</h3>
+            <p>
+                We chose a horizontal bar chart because our main
+                goal was comparing weather measurements across
+                stations, and bar lengths make those differences
+                easier to see. Horizontal bars also give us enough
+                room for longer station names, while sorting from
+                highest to lowest makes the rankings easier to
+                follow. We used different colors for temperature,
+                rainfall, and wind, with gold highlighting for
+                the selected station and dates.
+            </p>
+
+            <p>
+                Dropdowns made sense for choosing a category, month,
+                or state, while a slider worked better for exploring
+                specific days and date ranges. We also considered
+                using a map, but since our question focused on
+                comparing recorded measurements rather than station
+                locations, we decided a leaderboard would be more
+                useful. Station Spotlight was added because a
+                station's highest reading alone doesn't show
+                what happened on the surrounding days.
+            </p>
+
+            <h3>Findings and Data Limitations</h3>
+            <p>
+                While exploring the data, we noticed some unusually
+                high readings, including a reported temperature of
+                129.92°F at Patuxent River NAS in Maryland. However,
+                Port Arthur SE TX AP also recorded 26.03 inches of
+                rainfall during Hurricane Harvey, showing that an
+                extreme measurement isn't necessarily incorrect.
+                Rather than removing questionable readings without
+                enough evidence, we kept them and added warnings
+                where further verification was needed. We also
+                changed Station Spotlight to leave gaps for missing
+                daily observations. Since the dataset only covers
+                January 1 through September 21, 2017, our rankings
+                don't represent the entire year.
+            </p>
+
+            <h3>Development Process and Team Contributions</h3>
+
             <ul>
-                <li><strong>Dynamic queries (Category I):</strong> the weather
-                    category and month dropdowns re-query the data and
-                    re-rank the stations immediately.</li>
-                <li><strong>Day range slider (Category I):</strong> after
-                    picking a month, a two-handle slider sets the lower and
-                    upper day, and the ranking uses only the days in
-                    between. Bars animate (d3.easeLinear) to their new
-                    length and rank, so you can watch the leaders change
-                    over the month.</li>
-                <li><strong>State filter (Category I):</strong> a state
-                    dropdown limits the ranking to stations in one state,
-                    so you can find each state's local champions. It
-                    combines with the category, month and day
-                    filters.</li>
-                <li><strong>Extreme / single-day toggle:</strong> switches
-                    the ranking between the highest extreme in the day
-                    range, and the readings from only one day (the slider
-                    then has a single handle).</li>
-                <li><strong>Details-on-demand (Category II):</strong> hovering
-                    a bar shows a tooltip with the station name, state,
-                    exact value and the date of the reading.</li>
-                <li><strong>Highlighting (Category II):</strong> the hovered
-                    bar is outlined and faded so it stands out from the
-                    others.</li>
+                <li>
+                    <strong>Kiran Manoj:</strong>
+                    Prepared the dataset, built the initial leaderboard,
+                    and implemented the category and month filters.
+                    Kiran also developed Station Spotlight and connected
+                    it to the animated leaderboard, then worked on
+                    handling missing dates, adding data-quality warnings,
+                    and improving responsiveness.
+                </li>
+
+                <li>
+                    <strong>Mihail Gjoni:</strong>
+                    Built the day-range slider, single-day toggle,
+                    state filter, and animated transitions that
+                    update the rankings.
+                </li>
+
+                <li>
+                    <strong>Tong Zhan:</strong>
+                    Worked on webpage formatting, fixing bugs,
+                    improving the written descriptions, and
+                    preparing the demo video.
+                </li>
             </ul>
 
-            <h3>Design rationale</h3>
             <p>
-                A "top 10" ranking is a comparison of one quantity across
-                categories, so we used a horizontal bar chart: bar length on
-                a common zero baseline is the most accurately read encoding
-                for magnitude, and horizontal bars leave room for long
-                station names. Bars are sorted from highest to lowest so the
-                winner is always on top, and each bar carries its value as a
-                direct label so exact numbers can be read without the axis.
-                Each category has its own hue (red for heat, blue for rain,
-                teal for wind) so the active category is recognizable at a
-                glance; color is not used to encode data values.
+                The hardest part was putting our separate pieces
+                together. Initially, the animated leaderboard
+                interfered with selecting a station for Station
+                Spotlight, so we had to reconnect the selection
+                behavior without affecting the other filters and
+                animations. We also had to rethink how missing
+                measurements were shown and how to handle
+                questionable readings without automatically removing
+                them. These issues took up a considerable amount
+                of our development time. In total, we spent
+                approximately 30 people-hours, or around 10
+                hours each.
             </p>
+
+            <h3>AI Usage</h3>
             <p>
-                We chose dropdown filters because the questions users ask
-                are discrete ("which station was hottest in July?"), and a
-                dropdown keeps the choice and its current value visible.
-                Tooltips keep the chart uncluttered while still giving the
-                date and state on demand. We considered a map of stations,
-                but a map mostly encodes location, while our question is
-                about ranking magnitudes, so a map would make the
-                comparison harder. We also considered ranking by state, but
-                state-level aggregates hide the single extreme readings we
-                wanted to show.
-            </p>
-            <p>
-                Data cleaning: missing readings are skipped and simple
-                plausibility limits are applied (TMAX between −80 and 140 °F,
-                PRCP between 0 and 40 in, WSF5 between 0 and 150 mph). These
-                are our own limits, not official NOAA quality flags. The
-                dataset covers January 1 to September 21, 2017.
+                We used ChatGPT during planning to compare datasets,
+                discuss their strengths and weaknesses, and brainstorm
+                visualization ideas based on our interests and the
+                assignment requirements. During development, we also
+                used it to get feedback on our progress, troubleshoot
+                implementation issues, and identify areas that needed
+                improvement or additional testing. AI assistance was
+                also involved in developing and revising some code.
+                We tested the changes in our application and adjusted
+                them when necessary. We also used ChatGPT to review
+                our write-up and considered its suggestions when
+                making revisions.
             </p>
 
             <h3>References</h3>
             <ul>
-                <li>NOAA National Centers for Environmental Information,
-                    <a
-                        href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily">Global
-                        Historical Climatology Network - Daily (GHCN-Daily)</a>.
-                    Filtered 2017 subset provided by the CMSC471 course
-                    staff (weather.csv, with weather.txt column
-                    descriptions).
+                <li>
+                    NOAA National Centers for Environmental Information.
+                    <a href="https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Global Historical Climatology Network - Daily
+                        (GHCN-Daily)
+                    </a>.
                 </li>
-                <li><a href="https://d3js.org/">D3.js v7</a> for the
-                    visualization.</li>
-            </ul>
 
-            <h3>Development process</h3>
-            <p>
-                The work was split between the three of us:
-            </p>
-            <ul>
-                <li><strong>Kiran Manoj:</strong> initial data mapping, the
-                    bar chart, and the category and month dropdowns.</li>
-                <li><strong>Mihail Gjoni:</strong> the day range slider, the
-                    animated transitions, the highest-extreme / single-day
-                    toggle and the state filter.</li>
-                <li><strong>Tong Zhan:</strong> formatting, fixing bugs, the
-                    written descriptions and the demo video.</li>
-            </ul>
-            <p>
-                Each of us spent about 4 hours, so the project took roughly
-                12 people-hours in total.
-                One of the most difficult parts was making the day slider
-                informative for the chart: deciding what a range of days
-                should mean for the ranking, and making the changes easy
-                to follow as the slider moves.
-            </p>
+                <li>
+                    CMSC471 course staff.
+                    <a href="https://zcliu.github.io/teaching/CMSC471/assignments/weather.csv"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Daily Weather in the U.S., 2017 dataset
+                    </a>
+                    and
+                    <a href="https://zcliu.github.io/teaching/CMSC471/assignments/weather.txt"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        column descriptions
+                    </a>.
+                </li>
 
-            <h3>AI usage</h3>
-            <p>
-                In order to check the project requirements, draft parts of the
-                write up, and the single-day toggle and the state filter,
-                The team used ChatGPT and Gemni for this assignment.
-            </p>
+                <li>
+                    <a href="https://d3js.org/"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        D3.js v7
+                    </a>.
+                </li>
+
+                <li>
+                    <a href="https://github.com/johnwalley/d3-simple-slider"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        D3 Simple Slider
+                    </a>.
+                </li>
+            </ul>
 
         </section>
 
     </div>
 
+    <!-- Load the libraries before the scripts that use them. -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/d3-simple-slider@2.1.0/dist/d3-simple-slider.min.js"></script>
+
+    <!-- slider.js uses the variables and chart created in script.js. -->
     <script src="js/script.js"></script>
     <script src="js/slider.js"></script>
 </body>
-
 </html>
