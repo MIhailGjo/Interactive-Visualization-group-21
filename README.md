@@ -39,10 +39,5 @@ Serve the folder (opening the file directly blocks loading the CSV), e.g.:
 python3 -m http.server
 ```
 
-then open http://localhost:8000.
+then open the localhost URL shown in your terminal in your browser.
 
-## Remaining
-
-- [ ] Enable GitHub Pages (Settings → Pages → `main` / root) and check the live site
-- [ ] Record the demo video
-- [ ] Submit the site URL and video to Canvas
