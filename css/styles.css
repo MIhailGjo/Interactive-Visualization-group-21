@@ -123,6 +123,8 @@ select {
 #spotlight-description {
     color: #667085;
     font-size: 14px;
+}
+
 #day-label {
     min-width: 200px;
     font-weight: bold;
